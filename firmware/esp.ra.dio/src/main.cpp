@@ -1,46 +1,21 @@
-/*
- * This code programs a number of pins on an ESP32 as buttons on a BLE gamepad
- *
- * It uses arrays to cut down on code
- *
- * Uses the Bounce2 library to debounce all buttons
- *
- * Uses the rose/fell states of the Bounce instance to track button states
- *
- * Before using, adjust the BUTTON_COUNT, buttonPins and physicalButtons to suit
- * your senario
- *
- */
-
-#define BOUNCE_WITH_PROMPT_DETECTION  // Make button state changes available
-                                      // immediately
-
+#define BOUNCE_WITH_PROMPT_DETECTION
 #include <Arduino.h>
-#include <BleGamepad.h>  // https://github.com/lemmingDev/ESP32-BLE-Gamepad
-#include <Bounce2.h>     // https://github.com/thomasfredericks/Bounce2
-
-// #include <algorithm>
-// #include <array>
-// #include <pair>
+#include <BleGamepad.h>
+#include <Bounce2.h>
 
 #define PIN_EXTRA_GROUND 4
-#define BUTTON_COUNT 6
-#define AXIS_MIN 0
-#define AXIS_MAX INT16_MAX - 1
-#define AXIS_MIDDLE AXIS_MIN + (AXIS_MAX - AXIS_MIN) / 2
+
+const int FPS = 60;
+
 typedef uint8_t pin_number_t;
 typedef uint8_t button_number_t;
-// constexpr std::array<std::pair<button_number_t, pin_number_t>,
-// BUTTON_COUNT>{};
-const button_number_t O_HAT = 64;
-const button_number_t O_SPECIAL = 128;
+const button_number_t O_SPECIAL = 64;
+
+const size_t BUTTON_COUNT = 6;
 pin_number_t buttonPins[BUTTON_COUNT]{5, 6, 10, 9, 8, 7};
-button_number_t physicalButtons[BUTTON_COUNT]{O_SPECIAL + SELECT_BUTTON,
-                                              O_SPECIAL + START_BUTTON,
-                                              BUTTON_1,
-                                              BUTTON_2,
-                                              BUTTON_3,
-                                              BUTTON_4};
+button_number_t physicalButtons[BUTTON_COUNT]{BUTTON_8, BUTTON_7, BUTTON_1,
+                                              BUTTON_2, BUTTON_3, BUTTON_4};
+
 enum Direction { DIR_LEFT, DIR_RIGHT, DIR_DOWN, DIR_UP, DIR_COUNT };
 pin_number_t directionPins[4]{3, 2, 1, 0};
 
@@ -72,24 +47,21 @@ void setup() {
 
   BleGamepadConfiguration bleGamepadConfig;
   bleGamepadConfig.setAutoReport(false);
-  // bleGamepadConfig.setControllerType(CONTROLLER_TYPE_JOYSTICK);
-  bleGamepadConfig.setControllerType(CONTROLLER_TYPE_GAMEPAD);
-  // bleGamepadConfig.setVid(); // Allow default espressif VID
-  bleGamepadConfig.setPid(0xe388);  // My bluetooth spinner starts at 0xe389
-  // bleGamepadConfig.setTXPowerLevel(
-  // txPowerLevel);  // Defaults to 9 if not set. (Range: -12 to 9 dBm)
-  // bleGamepadConfig.setModelNumber("1.0");
-  // bleGamepadConfig.setFirmwareRevision("2.0");
-  // bleGamepadConfig.setHardwareRevision("1.7");
-  // Only XY axes
+  bleGamepadConfig.setControllerType(CONTROLLER_TYPE_JOYSTICK);
+  // Allow default espressif VID
+  // bleGamepadConfig.setVid();
+  // My bluetooth spinner starts at 0xe389
+  bleGamepadConfig.setPid(0xe388);
+  // Defaults to 9 if not set. (Range: -12 to 9 dBm)
+  // bleGamepadConfig.setTXPowerLevel(txPowerLevel);
   bleGamepadConfig.setWhichAxes(false, false, false, false, false, false, false,
                                 false);
-  bleGamepadConfig.setWhichSpecialButtons(true, true, false, false, false,
+  bleGamepadConfig.setWhichSpecialButtons(false, false, false, false, false,
                                           false, false, false);
   bleGamepadConfig.setHatSwitchCount(1);
   // bleGamepadConfig.setAxesMin(0);
   // bleGamepadConfig.setAxesMax(AXIS_MAX);
-  bleGamepadConfig.setButtonCount(BUTTON_COUNT);
+  bleGamepadConfig.setButtonCount(8);
   bleGamepadConfig.setAutoReport(false);
   bleGamepad.begin(&bleGamepadConfig);
 
@@ -97,10 +69,7 @@ void setup() {
 }
 
 void loop() {
-  if (!bleGamepad.isConnected()) {
-    // Serial.print(".");
-    return;
-  }
+  if (!bleGamepad.isConnected()) return;
 
   bool sendReport = false;
 
@@ -110,8 +79,11 @@ void loop() {
       auto button = physicalButtons[i];
       if (button >= O_SPECIAL) {
         button -= O_SPECIAL;
+        // Serial.print("SPECIAL ");
+        // Serial.println(button);
         bleGamepad.pressSpecialButton(button);
       } else {
+        // Serial.println(button);
         bleGamepad.press(button);
       }
       sendReport = true;
@@ -127,7 +99,7 @@ void loop() {
     }
   }
 
-  // let these be -1, 0, 1
+  // let these be -1, 0, 1, can then map to axes later
   static int8_t lastX, lastY;
   int8_t x = 0, y = 0;
   for (int dir = 0; dir < DIR_COUNT; dir++) {
@@ -171,5 +143,5 @@ void loop() {
     bleGamepad.sendReport();
   }
 
-  delay(20);  // (Un)comment to remove/add delay between loops
+  delay(1000 / FPS);
 }
