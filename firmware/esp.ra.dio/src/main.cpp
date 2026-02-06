@@ -1,76 +1,92 @@
 #define BOUNCE_WITH_PROMPT_DETECTION
 #include <Arduino.h>
-#include <BleGamepad.h>
+#include <BLEGamepad.h>
 #include <Bounce2.h>
 
-#define PIN_EXTRA_GROUND 4
+#include "config.h"
+#include "log.h"
 
-const int FPS = 60;
+static const int FPS = 60;
+static const int DEBOUNCE_MS = 5;
+static const unsigned long SLEEP_AFTER_MS = 1000 * 60 * 15;
+static const char *TAG = "Main";
 
-typedef uint8_t pin_number_t;
-typedef uint8_t button_number_t;
-const button_number_t O_SPECIAL = 64;
+static const uint8_t O_SPECIAL = 64;
+static uint8_t physicalButtons[]{BUTTON_1, BUTTON_2, BUTTON_3,
+                                 BUTTON_4, BUTTON_7, BUTTON_8};
 
-const size_t BUTTON_COUNT = 6;
-pin_number_t buttonPins[BUTTON_COUNT]{5, 6, 10, 9, 8, 7};
-button_number_t physicalButtons[BUTTON_COUNT]{BUTTON_8, BUTTON_7, BUTTON_1,
-                                              BUTTON_2, BUTTON_3, BUTTON_4};
+enum Direction { DIR_LEFT, DIR_RIGHT, DIR_DOWN, DIR_UP };
 
-enum Direction { DIR_LEFT, DIR_RIGHT, DIR_DOWN, DIR_UP, DIR_COUNT };
-pin_number_t directionPins[4]{3, 2, 1, 0};
-
-Bounce debouncers[BUTTON_COUNT];
-BleGamepad bleGamepad("ESP.RA.DIO Joystick", "Partlyhuman");
+constexpr size_t BUTTON_COUNT = sizeof(buttonPins);
+static Bounce debouncers[BUTTON_COUNT];
+static BleGamepad gamepad("ESP.RA.DIO Joystick", "Partlyhuman");
 
 void setup() {
   Serial.begin(115200);
 
-#ifdef PIN_EXTRA_GROUND
-  // NOT THE GREATEST THING, DEMO ONLY, MAKE AN EXTRA GROUND, PROCEED WITH
-  // CAUTION
-  pinMode(PIN_EXTRA_GROUND, OUTPUT);
-  digitalWrite(PIN_EXTRA_GROUND, LOW);
-#endif
+  esp_deep_sleep_enable_gpio_wakeup(1 << buttonPins[0],
+                                    ESP_GPIO_WAKEUP_GPIO_LOW);
+  bool woke = (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_GPIO);
+
+  for (size_t i = 0; i < sizeof(pinExtraGrounds); i++) {
+    pinMode(pinExtraGrounds[i], OUTPUT);
+    digitalWrite(pinExtraGrounds[i], LOW);
+  }
 
   for (size_t i = 0; i < BUTTON_COUNT; i++) {
     pinMode(buttonPins[i], INPUT_PULLUP);
 
     debouncers[i] = Bounce();
     debouncers[i].attach(buttonPins[i]);
-    // After setting up the button, setup the
-    // Bounce instance :
-    debouncers[i].interval(5);
+    debouncers[i].interval(DEBOUNCE_MS);
   }
   for (size_t i = 0; i < 4; i++) {
     pinMode(directionPins[i], INPUT_PULLUP);
   }
 
-  BleGamepadConfiguration bleGamepadConfig;
-  bleGamepadConfig.setAutoReport(false);
-  bleGamepadConfig.setControllerType(CONTROLLER_TYPE_JOYSTICK);
+  BleGamepadConfiguration config;
+  config.setAutoReport(false);
+  config.setControllerType(CONTROLLER_TYPE_JOYSTICK);
   // Allow default espressif VID
-  // bleGamepadConfig.setVid();
+  // config.setVid();
   // My bluetooth spinner starts at 0xe389
-  bleGamepadConfig.setPid(0xe388);
-  // Defaults to 9 if not set. (Range: -12 to 9 dBm)
-  // bleGamepadConfig.setTXPowerLevel(txPowerLevel);
-  bleGamepadConfig.setWhichAxes(false, false, false, false, false, false, false,
+  config.setPid(0xe388);
+  // The only valid values are: -12, -9, -6, -3, 0, 3, 6 and 9
+  // Max of 9 is default
+  config.setTXPowerLevel(6);
+  config.setWhichSpecialButtons(false, false, false, false, false, false, false,
                                 false);
-  bleGamepadConfig.setWhichSpecialButtons(false, false, false, false, false,
-                                          false, false, false);
-  bleGamepadConfig.setHatSwitchCount(1);
-  // bleGamepadConfig.setAxesMin(0);
-  // bleGamepadConfig.setAxesMax(AXIS_MAX);
-  bleGamepadConfig.setButtonCount(8);
-  bleGamepadConfig.setAutoReport(false);
-  bleGamepad.begin(&bleGamepadConfig);
+  // might consider adding 2 axes that are unused, or having an analog mode
+  // configurable
+  config.setWhichAxes(false, false, false, false, false, false, false, false);
+  config.setHatSwitchCount(1);
+  // config.setAxesMin(0);
+  // config.setAxesMax(AXIS_MAX);
+  config.setButtonCount(8);
+  config.setAutoReport(false);
+  gamepad.begin(&config);
 
-  // bleGamepad.setAxes(AXIS_MIDDLE, AXIS_MIDDLE);
+  // gamepad.setAxes(AXIS_MIDDLE, AXIS_MIDDLE);
+}
+
+static inline int8_t direction(Direction dir) {
+  return digitalRead(directionPins[dir]) == LOW;
 }
 
 void loop() {
-  if (!bleGamepad.isConnected()) return;
+  static unsigned long lastConnectedTime = millis();
+  if (!gamepad.isConnected()) {
+    auto idleFor = millis() - lastConnectedTime;
+    if (idleFor > SLEEP_AFTER_MS) {
+      LOGI(TAG, "Idle for %ld sec, sleeping.", idleFor / 1000);
+      Serial.flush();
+      gamepad.end();
+      esp_deep_sleep_start();
+    }
+    return;
+  }
 
+  lastConnectedTime = millis();
   bool sendReport = false;
 
   for (byte i = 0; i < BUTTON_COUNT; i++) {
@@ -79,21 +95,20 @@ void loop() {
       auto button = physicalButtons[i];
       if (button >= O_SPECIAL) {
         button -= O_SPECIAL;
-        // Serial.print("SPECIAL ");
-        // Serial.println(button);
-        bleGamepad.pressSpecialButton(button);
+        LOGV(TAG, "SPECIAL BTN %d", button);
+        gamepad.pressSpecialButton(button);
       } else {
-        // Serial.println(button);
-        bleGamepad.press(button);
+        LOGV(TAG, "BTN %d", button);
+        gamepad.press(button);
       }
       sendReport = true;
     } else if (debouncers[i].rose()) {
       auto button = physicalButtons[i];
       if (button >= O_SPECIAL) {
         button -= O_SPECIAL;
-        bleGamepad.releaseSpecialButton(button);
+        gamepad.releaseSpecialButton(button);
       } else {
-        bleGamepad.release(button);
+        gamepad.release(button);
       }
       sendReport = true;
     }
@@ -101,29 +116,13 @@ void loop() {
 
   // let these be -1, 0, 1, can then map to axes later
   static int8_t lastX, lastY;
-  int8_t x = 0, y = 0;
-  for (int dir = 0; dir < DIR_COUNT; dir++) {
-    if (digitalRead(directionPins[dir]) == LOW) {
-      switch ((Direction)dir) {
-        case DIR_LEFT:
-          x--;
-          break;
-        case DIR_RIGHT:
-          x++;
-          break;
-        case DIR_UP:
-          y--;
-          break;
-        case DIR_DOWN:
-          y++;
-          break;
-      }
-    }
-  }
+  int8_t x = direction(DIR_RIGHT) - direction(DIR_LEFT);
+  int8_t y = direction(DIR_DOWN) - direction(DIR_UP);
 
   if (x != lastX || y != lastY) {
     lastX = x;
     lastY = y;
+    sendReport = true;
 
     auto hat = HAT_CENTERED;
     if (x < 0) {
@@ -133,14 +132,11 @@ void loop() {
     } else if (x > 0) {
       hat = y == 0 ? HAT_RIGHT : (y > 0 ? HAT_DOWN_RIGHT : HAT_UP_RIGHT);
     }
-    bleGamepad.setHat1(hat);
-
-    // bleGamepad.setAxes(x, y);
-    sendReport = true;
+    gamepad.setHat1(hat);
   }
 
   if (sendReport) {
-    bleGamepad.sendReport();
+    gamepad.sendReport();
   }
 
   delay(1000 / FPS);
