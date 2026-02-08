@@ -2,20 +2,21 @@
 #include <Arduino.h>
 #include <BLEGamepad.h>
 #include <Bounce2.h>
+#include <esp_sleep.h>
 
 #include "config.h"
 #include "log.h"
 
 static const int FPS = 60;
 static const int DEBOUNCE_MS = 5;
-static const unsigned long SLEEP_AFTER_MS = 1000 * 60 * 15;
+static const unsigned long SLEEP_AFTER_MS = 1000 * 60 * 1;
 static const char *TAG = "Main";
 
 static const uint8_t O_SPECIAL = 64;
 static uint8_t physicalButtons[]{BUTTON_1, BUTTON_2, BUTTON_3,
                                  BUTTON_4, BUTTON_7, BUTTON_8};
 
-enum Direction { DIR_LEFT, DIR_RIGHT, DIR_DOWN, DIR_UP };
+enum Direction { DIR_LEFT, DIR_RIGHT, DIR_DOWN, DIR_UP, DIR_COUNT };
 
 constexpr size_t BUTTON_COUNT = sizeof(buttonPins);
 static Bounce debouncers[BUTTON_COUNT];
@@ -24,8 +25,10 @@ static BleGamepad gamepad("ESP.RA.DIO Joystick", "Partlyhuman");
 void setup() {
   Serial.begin(115200);
 
-  esp_deep_sleep_enable_gpio_wakeup(1 << buttonPins[0],
-                                    ESP_GPIO_WAKEUP_GPIO_LOW);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(500);
+
   bool woke = (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_GPIO);
 
   for (size_t i = 0; i < sizeof(pinExtraGrounds); i++) {
@@ -40,7 +43,7 @@ void setup() {
     debouncers[i].attach(buttonPins[i]);
     debouncers[i].interval(DEBOUNCE_MS);
   }
-  for (size_t i = 0; i < 4; i++) {
+  for (size_t i = 0; i < DIR_COUNT; i++) {
     pinMode(directionPins[i], INPUT_PULLUP);
   }
 
@@ -73,15 +76,42 @@ static inline int8_t direction(Direction dir) {
   return digitalRead(directionPins[dir]) == LOW;
 }
 
+void deepSleep() {
+  gamepad.end();
+
+  // Disable any pullups before sleep, except the wake trigger. is this
+  // necessary????
+  for (size_t i = 0; i < sizeof(pinExtraGrounds); i++) {
+    pinMode(pinExtraGrounds[i], INPUT);
+  }
+  for (size_t i = 0; i < BUTTON_COUNT; i++) {
+    pinMode(buttonPins[i], INPUT);
+  }
+  for (size_t i = 0; i < DIR_COUNT; i++) {
+    pinMode(directionPins[i], INPUT);
+  }
+
+  // This doesn't work because we're using a fake ground that stops getting
+  // driven low
+  if (ESP_OK != gpio_pullup_en(wakeGpio)) {
+    LOGE(TAG, "Failed to pullup");
+  }
+  if (ESP_OK != esp_deep_sleep_enable_gpio_wakeup(1 << wakeGpio,
+                                                  ESP_GPIO_WAKEUP_GPIO_LOW)) {
+    LOGE(TAG, "Failed to enable GPIO wakeup");
+  }
+  LOGI(TAG, "Shutdown");
+  Serial.flush();
+  esp_deep_sleep_start();
+}
+
 void loop() {
   static unsigned long lastConnectedTime = millis();
   if (!gamepad.isConnected()) {
     auto idleFor = millis() - lastConnectedTime;
     if (idleFor > SLEEP_AFTER_MS) {
       LOGI(TAG, "Idle for %ld sec, sleeping.", idleFor / 1000);
-      Serial.flush();
-      gamepad.end();
-      esp_deep_sleep_start();
+      deepSleep();
     }
     return;
   }
