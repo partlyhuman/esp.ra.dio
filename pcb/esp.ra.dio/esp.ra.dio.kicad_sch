@@ -5,9 +5,9 @@
 	(uuid "e91880d7-e1f1-43ba-b9bf-5f0fc90655d2")
 	(paper "A4")
 	(title_block
-		(title "NG2040 Controller")
-		(date "2024-09-05")
-		(rev "4")
+		(title "ESP.Ra.Dio BTLE Joystick")
+		(date "2026-03-07")
+		(rev "2")
 		(company "@partlyhuman")
 	)
 	(lib_symbols
@@ -3249,6 +3249,16 @@
 	)
 	(wire
 		(pts
+			(xy 57.15 26.67) (xy 67.31 26.67)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7d9ca748-4a7f-4d9b-8b49-2f0c51373882")
+	)
+	(wire
+		(pts
 			(xy 36.83 77.47) (xy 36.83 83.82)
 		)
 		(stroke
@@ -3366,16 +3376,6 @@
 			(type default)
 		)
 		(uuid "a515e882-4912-47ae-9b2a-ebed3d76e9a7")
-	)
-	(wire
-		(pts
-			(xy 57.15 26.67) (xy 67.31 26.67)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a61c2a5d-ae4d-4f62-9c48-1f6bd76ec237")
 	)
 	(wire
 		(pts
@@ -3747,13 +3747,23 @@
 		)
 		(uuid "659d6e2e-1ff4-4cae-b1b6-24eaf8386992")
 	)
-	(label "VBAT"
-		(at 67.31 26.67 180)
+	(label "VIN"
+		(at 72.39 38.1 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
+		)
+		(uuid "6bc4200b-51f2-4cac-9aab-74f8c767ce40")
+	)
+	(label "VBAT"
+		(at 57.15 26.67 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
 		)
 		(uuid "73c47ffb-b42d-489b-a2ea-f1fcfbbc7f95")
 	)
@@ -3836,6 +3846,16 @@
 			(justify right bottom)
 		)
 		(uuid "a7c484f2-1d1f-42eb-b383-1d3783459516")
+	)
+	(label "VBATBUS"
+		(at 62.23 35.56 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "ae770feb-0fc5-420a-9e5e-ff0e1b86ec30")
 	)
 	(label "DU"
 		(at 154.94 91.44 180)
@@ -4204,7 +4224,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 67.31 67.31 0)
 			(effects
 				(font
@@ -4587,12 +4607,12 @@
 	(symbol
 		(lib_id "Switch:SW_Push")
 		(at 67.31 63.5 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "4d3ecd12-43be-4576-a623-f967ab7a40db")
 		(property "Reference" "SW1"
 			(at 67.31 55.88 0)
@@ -4610,7 +4630,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Button_Switch_SMD:SW_SPST_PTS810"
 			(at 67.31 58.42 0)
 			(effects
 				(font
@@ -4680,7 +4700,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_2.2mm_M2"
 			(at 265.43 20.32 0)
 			(effects
 				(font
@@ -5234,7 +5254,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 104.14 43.18 0)
 			(effects
 				(font
@@ -5302,7 +5322,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_USB:USB_Micro-B_Amphenol_10118193-0001LF_Horizontal"
+		(property "Footprint" "Connector_USB:USB_Micro-AB_Molex_47590-0001"
 			(at 29.21 33.02 0)
 			(effects
 				(font
@@ -5384,7 +5404,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 			(at 110.49 43.18 0)
 			(effects
 				(font
@@ -5452,7 +5472,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 157.48 71.12 0)
 			(effects
 				(font
@@ -5522,7 +5542,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_2.2mm_M2"
 			(at 265.43 39.37 0)
 			(effects
 				(font
@@ -5561,6 +5581,7 @@
 	(symbol
 		(lib_id "Diode:BAT54C")
 		(at 49.53 26.67 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5584,7 +5605,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-			(at 51.435 23.495 0)
+			(at 47.625 23.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5594,7 +5615,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.diodes.com/_files/datasheets/ds11005.pdf"
-			(at 47.498 26.67 0)
+			(at 51.562 26.67 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5654,7 +5675,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 157.48 73.66 0)
 			(effects
 				(font
@@ -5724,7 +5745,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_2.2mm_M2"
 			(at 265.43 26.67 0)
 			(effects
 				(font
@@ -5854,7 +5875,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_2.2mm_M2"
 			(at 265.43 33.02 0)
 			(effects
 				(font
@@ -5916,7 +5937,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 			(at 78.74 63.5 0)
 			(effects
 				(font
@@ -5986,7 +6007,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
 			(at 165.1 60.96 0)
 			(effects
 				(font
@@ -6113,7 +6134,6 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "f8181f22-523f-464e-a825-38ca0bf66764")
 		(property "Reference" "SW3"
 			(at 165.1 88.9 0)
@@ -6131,7 +6151,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Button_Switch_SMD:SW_SPST_PTS810"
 			(at 165.1 91.44 0)
 			(effects
 				(font
