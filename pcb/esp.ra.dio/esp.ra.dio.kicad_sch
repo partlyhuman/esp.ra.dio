@@ -3687,7 +3687,7 @@
 		)
 		(uuid "4ea18254-4b0b-4228-89a7-130adcb016ae")
 	)
-	(label "BD"
+	(label "BC"
 		(at 154.94 99.06 180)
 		(effects
 			(font
@@ -3837,7 +3837,7 @@
 		)
 		(uuid "a397f9ae-ec28-4186-88fb-3526d4b31c61")
 	)
-	(label "BC"
+	(label "BD"
 		(at 154.94 93.98 180)
 		(effects
 			(font
