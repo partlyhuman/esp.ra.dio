@@ -3066,16 +3066,105 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "In dev board config, USB can power,\nprevent backpowering battery by keeping switch off\nIn production boards, DNP USB connector"
+	(text_box "USB, RESET, BOOT buttons for development only, can DNP"
 		(exclude_from_sim no)
-		(at 107.95 41.148 0)
+		(at 27.94 30.48 0)
+		(size 26.67 7.62)
+		(margins 0.9525 0.9525 0.9525 0.9525)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(type none)
+		)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify left top)
 		)
-		(uuid "dd1a29d7-7522-465b-9cbd-0602a8b9ba00")
+		(uuid "36ee405c-48fb-41ff-a79f-bcf3fad34216")
+	)
+	(text_box "GPIO2, GPIO8, GPIO9 used in strapping\nGPIO2, GPIO8 float. GPIO9 has weak int. pullup\nJoint download mode requires\nGPIO2=1 GPIO8=1 GPIO9=0\nR6,R7 pullup GPIO2,8 always\nButton sinks GPIO9 to 0 for boot\nWeak pullups only help the pins' normal common GND button behaviour"
+		(exclude_from_sim no)
+		(at 222.25 91.44 0)
+		(size 50.8 17.78)
+		(margins 0.9525 0.9525 0.9525 0.9525)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "4ada5e0c-7d1e-4361-aef6-4619435fa840")
+	)
+	(text_box "In dev board config, USB can power.\nEngineer must prevent backpowering batt by keeping switch off."
+		(exclude_from_sim no)
+		(at 74.93 30.48 0)
+		(size 39.37 7.62)
+		(margins 0.9525 0.9525 0.9525 0.9525)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "552c5835-1660-493d-97ed-0715db23d0dd")
+	)
+	(text_box "GPIO9 used for LED signalling in production.\nUsing low-side switch to avoid any current leakage.\nShould not interfere with bootstrapping behaviour, normally float with internal pullup to high = normal boot"
+		(exclude_from_sim no)
+		(at 196.85 151.13 0)
+		(size 59.69 10.16)
+		(margins 0.9525 0.9525 0.9525 0.9525)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "704a7013-15ca-4dd0-93ab-f19bc7092dff")
+	)
+	(text_box "UART for programming production units"
+		(exclude_from_sim no)
+		(at 191.77 71.12 0)
+		(size 20.32 7.62)
+		(margins 0.9525 0.9525 0.9525 0.9525)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "c02441ef-4af7-49ab-9866-5005390496e0")
 	)
 	(junction
 		(at 97.79 91.44)
