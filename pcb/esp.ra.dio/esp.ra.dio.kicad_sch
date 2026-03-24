@@ -3317,7 +3317,7 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "Place C5 as close to\nVCC pin as possible"
+	(text "Place C5 as close to\n3V3 pin as possible"
 		(exclude_from_sim no)
 		(at 153.67 53.34 0)
 		(effects
