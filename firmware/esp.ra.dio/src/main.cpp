@@ -1,9 +1,9 @@
 #define BOUNCE_WITH_PROMPT_DETECTION
 #include <Arduino.h>
-#include <BLEGamepad.h>
 #include <Bounce2.h>
 #include <esp_sleep.h>
 
+#include "BLEGamepad.h"
 #include "config.h"
 #include "log.h"
 
@@ -23,18 +23,25 @@ static Bounce debouncers[BUTTON_COUNT];
 static BleGamepad gamepad("ESP.RA.DIO Joystick", "Partlyhuman");
 
 void setup() {
-  Serial.begin(115200);
+#if LOG_LEVEL >= 4
+  esp_log_level_set("*", ESP_LOG_VERBOSE);
+#endif
+  Serial.begin(9600);
+  while (!Serial) {
+  }
 
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(500);
+  Serial.println("Hello!");
+
+  // pinMode(LED_BUILTIN, OUTPUT);
+  // digitalWrite(LED_BUILTIN, LOW);
+  // delay(500);
 
   bool woke = (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_GPIO);
 
-  for (size_t i = 0; i < sizeof(pinExtraGrounds); i++) {
-    pinMode(pinExtraGrounds[i], OUTPUT);
-    digitalWrite(pinExtraGrounds[i], LOW);
-  }
+  // for (size_t i = 0; i < sizeof(pinExtraGrounds); i++) {
+  //   pinMode(pinExtraGrounds[i], OUTPUT);
+  //   digitalWrite(pinExtraGrounds[i], LOW);
+  // }
 
   for (size_t i = 0; i < BUTTON_COUNT; i++) {
     pinMode(buttonPins[i], INPUT_PULLUP);
@@ -46,6 +53,8 @@ void setup() {
   for (size_t i = 0; i < DIR_COUNT; i++) {
     pinMode(directionPins[i], INPUT_PULLUP);
   }
+
+  Serial.println("Pins setup");
 
   BleGamepadConfiguration config;
   config.setAutoReport(false);
@@ -67,9 +76,11 @@ void setup() {
   // config.setAxesMax(AXIS_MAX);
   config.setButtonCount(8);
   config.setAutoReport(false);
+
   gamepad.begin(&config);
 
   // gamepad.setAxes(AXIS_MIDDLE, AXIS_MIDDLE);
+  Serial.println("Setup complete");
 }
 
 static inline int8_t direction(Direction dir) {
@@ -91,8 +102,6 @@ void deepSleep() {
     pinMode(directionPins[i], INPUT);
   }
 
-  // This doesn't work because we're using a fake ground that stops getting
-  // driven low
   if (ESP_OK != gpio_pullup_en(wakeGpio)) {
     LOGE(TAG, "Failed to pullup");
   }
@@ -106,6 +115,11 @@ void deepSleep() {
 }
 
 void loop() {
+  delay(1000);
+  Serial.println("echo");
+}
+
+void _loop() {
   static unsigned long lastConnectedTime = millis();
   if (!gamepad.isConnected()) {
     auto idleFor = millis() - lastConnectedTime;
