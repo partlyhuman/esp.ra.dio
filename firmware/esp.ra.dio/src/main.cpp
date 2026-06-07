@@ -26,17 +26,13 @@ void setup() {
 #if LOG_LEVEL >= 4
   esp_log_level_set("*", ESP_LOG_VERBOSE);
 #endif
-  Serial.begin(9600);
-  while (!Serial) {
-  }
-
-  Serial.println("Hello!");
-
-  // pinMode(LED_BUILTIN, OUTPUT);
-  // digitalWrite(LED_BUILTIN, LOW);
-  // delay(500);
+  Serial.begin(115200);
 
   bool woke = (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_GPIO);
+
+  pinMode(PIN_LED, OUTPUT);
+  gpio_hold_dis((gpio_num_t)PIN_LED);
+  digitalWrite(PIN_LED, HIGH);
 
   // for (size_t i = 0; i < sizeof(pinExtraGrounds); i++) {
   //   pinMode(pinExtraGrounds[i], OUTPUT);
@@ -54,7 +50,7 @@ void setup() {
     pinMode(directionPins[i], INPUT_PULLUP);
   }
 
-  Serial.println("Pins setup");
+  LOGD(TAG, "Pins setup");
 
   BleGamepadConfiguration config;
   config.setAutoReport(false);
@@ -80,7 +76,7 @@ void setup() {
   gamepad.begin(&config);
 
   // gamepad.setAxes(AXIS_MIDDLE, AXIS_MIDDLE);
-  Serial.println("Setup complete");
+  LOGI(TAG, "Setup complete");
 }
 
 static inline int8_t direction(Direction dir) {
@@ -88,13 +84,14 @@ static inline int8_t direction(Direction dir) {
 }
 
 void deepSleep() {
+  LOGI(TAG, "Going to sleep");
   gamepad.end();
 
   // Disable any pullups before sleep, except the wake trigger. is this
   // necessary????
-  for (size_t i = 0; i < sizeof(pinExtraGrounds); i++) {
-    pinMode(pinExtraGrounds[i], INPUT);
-  }
+  // for (size_t i = 0; i < sizeof(pinExtraGrounds); i++) {
+  //   pinMode(pinExtraGrounds[i], INPUT);
+  // }
   for (size_t i = 0; i < BUTTON_COUNT; i++) {
     pinMode(buttonPins[i], INPUT);
   }
@@ -102,6 +99,14 @@ void deepSleep() {
     pinMode(directionPins[i], INPUT);
   }
 
+  // keep LED off
+  digitalWrite(PIN_LED, LOW);
+  gpio_deep_sleep_hold_en();
+  if (ESP_OK != gpio_hold_en((gpio_num_t)PIN_LED)) {
+    LOGE(TAG, "Failed to hold LED pin for sleep");
+  }
+
+  // setup wake pin
   if (ESP_OK != gpio_pullup_en(wakeGpio)) {
     LOGE(TAG, "Failed to pullup");
   }
@@ -115,18 +120,17 @@ void deepSleep() {
 }
 
 void loop() {
-  delay(1000);
-  Serial.println("echo");
-}
+  delay(1000 / FPS);
 
-void _loop() {
   static unsigned long lastConnectedTime = millis();
   if (!gamepad.isConnected()) {
     auto idleFor = millis() - lastConnectedTime;
     if (idleFor > SLEEP_AFTER_MS) {
       LOGI(TAG, "Idle for %ld sec, sleeping.", idleFor / 1000);
       deepSleep();
+      return;
     }
+    yield();
     return;
   }
 
@@ -182,6 +186,4 @@ void _loop() {
   if (sendReport) {
     gamepad.sendReport();
   }
-
-  delay(1000 / FPS);
 }

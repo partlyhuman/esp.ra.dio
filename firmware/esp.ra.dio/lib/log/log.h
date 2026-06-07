@@ -1,10 +1,12 @@
 #pragma once
 
+#ifndef LOGFUNC
 #ifdef ARDUINO
 #include <Arduino.h>
 #define LOGFUNC Serial.printf
 #else
 #define LOGFUNC printf
+#endif
 #endif
 
 // 0 - Errors, 1 - Warnings, 2 - Info, 3 - Debug, 4 - Verbose
