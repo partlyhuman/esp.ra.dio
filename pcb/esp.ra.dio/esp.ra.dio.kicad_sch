@@ -6,8 +6,8 @@
 	(paper "A4")
 	(title_block
 		(title "ESP.Ra.Dio BTLE Joystick")
-		(date "2026-03-19")
-		(rev "2")
+		(date "2026-06-06")
+		(rev "3")
 		(company "@partlyhuman")
 	)
 	(lib_symbols
