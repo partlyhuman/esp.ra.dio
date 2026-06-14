@@ -3636,6 +3636,26 @@
 		)
 		(uuid "2fc0d13b-b642-4dc8-9489-a76eabaf000d")
 	)
+	(text_box "Battery level sensing via 1/2 voltage drop to safe levels\n4M @ 3.7V = 0.925uA leakage"
+		(exclude_from_sim no)
+		(at 209.55 89.7524 0)
+		(size 35.56 8.0376)
+		(margins 0.9525 0.9525 0.9525 0.9525)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "34a59a3f-12e8-4396-a4d7-b664fff773a7")
+	)
 	(text_box "USB, RESET, BOOT buttons for development only, can DNP, but populating would enable user firmware updates."
 		(exclude_from_sim no)
 		(at 27.94 26.67 0)
@@ -3658,7 +3678,7 @@
 	)
 	(text_box "Joint download mode: GPIO9=0 GPIO8=1 \nNormal boot: GPIO9=1 GPIO8=ANY\nGPIO2 should be pulled up during boot for stability.\nGPIO9 has weak int. pullup."
 		(exclude_from_sim no)
-		(at 237.49 80.01 0)
+		(at 223.52 100.33 0)
 		(size 53.34 10.16)
 		(margins 0.9525 0.9525 0.9525 0.9525)
 		(stroke
@@ -3736,10 +3756,10 @@
 		)
 		(uuid "c02441ef-4af7-49ab-9866-5005390496e0")
 	)
-	(text_box "R7 for dev, R10 for prod"
+	(text_box "R7 for dev, R10 for prod (can't go into joint boot)"
 		(exclude_from_sim no)
-		(at 220.98 115.57 0)
-		(size 27.94 3.9483)
+		(at 222.25 113.3871 0)
+		(size 27.94 5.9929)
 		(margins 0.9525 0.9525 0.9525 0.9525)
 		(stroke
 			(width -0.0001)
@@ -3865,10 +3885,22 @@
 		(uuid "b6472da5-fe9b-4aba-8e09-b510cafd66e0")
 	)
 	(junction
+		(at 207.01 106.68)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b7e157f3-a91b-4d40-9dc9-e8390122f982")
+	)
+	(junction
 		(at 114.3 58.42)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b89c6383-3408-49db-a3cf-bf0f2a3fd515")
+	)
+	(junction
+		(at 201.93 106.68)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b960700a-63bb-4ba6-b10c-831a77a0eb01")
 	)
 	(junction
 		(at 148.59 58.42)
@@ -4040,7 +4072,7 @@
 	)
 	(wire
 		(pts
-			(xy 180.34 106.68) (xy 231.14 106.68)
+			(xy 180.34 106.68) (xy 201.93 106.68)
 		)
 		(stroke
 			(width 0)
@@ -4057,6 +4089,16 @@
 			(type default)
 		)
 		(uuid "297e49d3-fc53-4114-a789-c4988140875a")
+	)
+	(wire
+		(pts
+			(xy 201.93 106.68) (xy 207.01 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "29c86c95-6ddd-4068-b204-41dea6cf477d")
 	)
 	(wire
 		(pts
@@ -4360,7 +4402,7 @@
 	)
 	(wire
 		(pts
-			(xy 180.34 101.6) (xy 207.01 101.6)
+			(xy 180.34 101.6) (xy 191.77 101.6)
 		)
 		(stroke
 			(width 0)
@@ -4417,6 +4459,16 @@
 			(type default)
 		)
 		(uuid "79d83f2a-c4b3-49b4-b82e-4e0a9a4fcfff")
+	)
+	(wire
+		(pts
+			(xy 207.01 113.03) (xy 207.01 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7c1e36ee-c4ed-44b7-a12e-8dff879ba5d4")
 	)
 	(wire
 		(pts
@@ -4520,6 +4572,16 @@
 	)
 	(wire
 		(pts
+			(xy 201.93 113.03) (xy 201.93 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9269a7c9-ec84-4212-80cb-d14ed7cdf249")
+	)
+	(wire
+		(pts
 			(xy 213.36 121.92) (xy 224.79 121.92)
 		)
 		(stroke
@@ -4540,7 +4602,7 @@
 	)
 	(wire
 		(pts
-			(xy 180.34 99.06) (xy 207.01 99.06)
+			(xy 180.34 99.06) (xy 191.77 99.06)
 		)
 		(stroke
 			(width 0)
@@ -4557,6 +4619,16 @@
 			(type default)
 		)
 		(uuid "a515e882-4912-47ae-9b2a-ebed3d76e9a7")
+	)
+	(wire
+		(pts
+			(xy 207.01 96.52) (xy 207.01 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a5933039-20ee-4557-ae5c-b6a59eea0c63")
 	)
 	(wire
 		(pts
@@ -4909,7 +4981,7 @@
 		(uuid "1c4c7a89-ec34-4964-879f-7e64a9210a80")
 	)
 	(label "USB_DP"
-		(at 207.01 101.6 180)
+		(at 191.77 101.6 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -4968,6 +5040,16 @@
 		)
 		(uuid "4626cee1-d157-4d9a-9a22-5d2ee895281c")
 	)
+	(label "VBAT"
+		(at 207.01 96.52 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "4b3e37fc-e093-432d-8e00-23e17139cff2")
+	)
 	(label "SEL"
 		(at 116.84 101.6 0)
 		(effects
@@ -4999,7 +5081,7 @@
 		(uuid "540faff9-9d54-4f01-ba43-6886ffa81bab")
 	)
 	(label "USB_DN"
-		(at 207.01 99.06 180)
+		(at 191.77 99.06 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -5158,7 +5240,7 @@
 		)
 		(uuid "b6267084-58a8-4903-aaea-4632a2f9f01e")
 	)
-	(label "GPIO2"
+	(label "BATSENSE"
 		(at 191.77 106.68 180)
 		(effects
 			(font
@@ -5659,7 +5741,6 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "24679fc9-b705-4f6e-af0a-a6da27c1fc28")
 		(property "Reference" "#PWR011"
 			(at 213.36 118.11 0)
@@ -5673,7 +5754,7 @@
 			)
 		)
 		(property "Value" "VCC"
-			(at 213.36 109.22 0)
+			(at 217.17 113.03 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6936,6 +7017,83 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 201.93 113.03 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "6593a009-c6c3-4a2c-8477-ae33ffee5ab9")
+		(property "Reference" "#PWR013"
+			(at 201.93 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 201.93 116.84 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 201.93 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 201.93 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 201.93 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0ee6699b-ce44-42e6-bab2-d07374172227")
+		)
+		(instances
+			(project "esp.ra.dio"
+				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
+					(reference "#PWR013")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R_Small")
 		(at 213.36 125.73 0)
 		(mirror y)
@@ -7099,6 +7257,83 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 207.01 113.03 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "6c250898-001f-49a9-b6fa-c9186272609a")
+		(property "Reference" "#PWR010"
+			(at 207.01 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 207.01 116.84 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 207.01 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 207.01 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 207.01 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "d33924b5-adad-4875-9bef-48ecfed39b10")
+		)
+		(instances
+			(project "esp.ra.dio"
+				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
+					(reference "#PWR010")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Jumper:Jumper_2_Open")
 		(at 97.79 48.26 0)
 		(unit 1)
@@ -7256,6 +7491,88 @@
 			(project "esp.ra.dio"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "J6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Small")
+		(at 201.93 109.22 0)
+		(mirror x)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "7a896ef3-8f57-4464-b871-a23b1e34245f")
+		(property "Reference" "C6"
+			(at 199.39 107.9435 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "0.1uF"
+			(at 199.39 110.4835 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 201.93 109.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 201.93 109.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor, small symbol"
+			(at 201.93 109.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "67c99414-9e2b-457a-877d-56b74da2f6bc")
+		)
+		(pin "2"
+			(uuid "b484be62-70bb-43ae-b43b-681720268816")
+		)
+		(instances
+			(project "esp.ra.dio"
+				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
+					(reference "C6")
 					(unit 1)
 				)
 			)
@@ -8302,6 +8619,89 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_Small")
+		(at 207.01 104.14 0)
+		(mirror x)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d16edae4-77b3-436f-ba0a-bc2510601d22")
+		(property "Reference" "R1"
+			(at 209.55 102.8699 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2M"
+			(at 209.55 105.4099 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 207.01 104.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 207.01 104.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 207.01 104.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "7e56640a-60ec-4a33-b124-c0f4d6c6bd4b")
+		)
+		(pin "2"
+			(uuid "901ea68d-8001-4f39-b782-4a500ae8f43d")
+		)
+		(instances
+			(project "esp.ra.dio"
+				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
+					(reference "R1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Mechanical:MountingHole")
 		(at 265.43 33.02 0)
 		(unit 1)
@@ -8454,6 +8854,89 @@
 			(project "esp.ra.dio"
 				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
 					(reference "R3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 207.01 109.22 0)
+		(mirror x)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "e708ff3e-2be9-4025-8be6-8fa392df9d43")
+		(property "Reference" "R2"
+			(at 209.55 107.9499 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2M"
+			(at 209.55 110.4899 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 207.01 109.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 207.01 109.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor, small symbol"
+			(at 207.01 109.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "8e098a19-3a6f-413c-ba3f-1ca6b5f1a0da")
+		)
+		(pin "2"
+			(uuid "b508f6db-1108-4cb6-9be6-09b590e000ea")
+		)
+		(instances
+			(project "esp.ra.dio"
+				(path "/e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
+					(reference "R2")
 					(unit 1)
 				)
 			)
