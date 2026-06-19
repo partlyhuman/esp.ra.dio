@@ -1689,7 +1689,7 @@ bool BleGamepad::deleteAllBonds(bool resetBoard)
   NimBLEDevice::deleteAllBonds();
   NIMBLE_LOGD(LOG_TAG, "deleteAllBonds - All bonds deleted");
   success = true;
-  delay(500);
+  // delay(500);
 
   if (resetBoard)
   {
@@ -1746,6 +1746,12 @@ bool BleGamepad::enterPairingMode()
       delay(500);
     }
 
+    // REB: uh, this was missing
+    NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();
+    if (!adv->isAdvertising()) {
+      adv->start();
+    }
+
     bool connectedToOldDevice = true;
 
     // While connected to old device, keep allowing to connect new new devices
@@ -1771,6 +1777,10 @@ bool BleGamepad::enterPairingMode()
           NIMBLE_LOGD(LOG_TAG, "enterPairingMode - Connected to new client");
           NIMBLE_LOGD(LOG_TAG, "enterPairingMode - Exit pairing mode");
           connectedToOldDevice = false;
+
+          // REB: stop advertising too
+          adv->stop();
+
           return true;
         }
       }
@@ -2067,6 +2077,14 @@ void BleGamepad::taskServer(void *pvParameter)
 
   NimBLEDevice::init(BleGamepadInstance->deviceName);
   NimBLEDevice::setPower(BleGamepadInstance->configuration.getTXPowerLevel()); // Set transmit power for advertising (Range: -12 to +9 dBm)
+
+  // REB moved earlier
+  // NimBLEDevice::setSecurityAuth(BLE_SM_PAIR_AUTHREQ_BOND);
+  // NimBLEDevice::setSecurityAuth(true, false,
+  //                               false);  // enable bonding, no MITM, no SC
+  // REB trying different connection settings
+  NimBLEDevice::setSecurityAuth(true, false, false);
+
   NimBLEServer *pServer = NimBLEDevice::createServer();
   pServer->setCallbacks(BleGamepadInstance->connectionStatus);
   pServer->advertiseOnDisconnect(true);
@@ -2128,9 +2146,10 @@ void BleGamepad::taskServer(void *pvParameter)
   BleGamepadInstance->hid->setPnp(0x01, BleGamepadInstance->configuration.getVid(), BleGamepadInstance->configuration.getPid(), BleGamepadInstance->configuration.getGuidVersion());
   BleGamepadInstance->hid->setHidInfo(0x00, 0x01);
 
-  // NimBLEDevice::setSecurityAuth(BLE_SM_PAIR_AUTHREQ_BOND);
-  NimBLEDevice::setSecurityAuth(true, false, false); // enable bonding, no MITM, no SC
-
+  // REB: Moving earlier
+  // // NimBLEDevice::setSecurityAuth(BLE_SM_PAIR_AUTHREQ_BOND);
+  // NimBLEDevice::setSecurityAuth(true, false, false); // enable bonding, no
+  // MITM, no SC
 
   uint8_t *customHidReportDescriptor = new uint8_t[BleGamepadInstance->hidReportDescriptorSize];
   memcpy(customHidReportDescriptor, BleGamepadInstance->tempHidReportDescriptor, BleGamepadInstance->hidReportDescriptorSize);
@@ -2157,6 +2176,9 @@ void BleGamepad::taskServer(void *pvParameter)
   else
   {
     NIMBLE_LOGD(LOG_TAG, "Main NimBLE server advertising started!");
+
+    // REB: delay advertising start to ensure everything is registered first
+    vTaskDelay(pdMS_TO_TICKS(500));
     pAdvertising->start();
   }
   

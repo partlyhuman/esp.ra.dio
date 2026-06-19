@@ -4,23 +4,42 @@
 #include <esp_sleep.h>
 
 #include "BLEGamepad.h"
+#include "blink.h"
 #include "config.h"
 #include "log.h"
 
-static const int FPS = 60;
-static const int DEBOUNCE_MS = 5;
-static const unsigned long SLEEP_AFTER_MS = 1000 * 60 * 1;
+// Note only some GPIO can be used as wake sources
+constexpr gpio_num_t wakeGpio = GPIO_NUM_0;
+
+// Not for production: drive these low as ground
+constexpr uint8_t pinExtraGrounds[]{};
+
+// buttons A, B, C, D, SEL, START
+constexpr uint8_t buttonPins[]{20, 3, 10, 21, 1, 0};
+constexpr size_t INDEX_BUTTON_SEL = 4;
+constexpr size_t INDEX_BUTTON_START = 5;
+
+// dirs LEFT, RIGHT, DOWN, UP
+constexpr uint8_t directionPins[]{4, 5, 6, 7};
+
+static const int SCAN_INTERVAL_MS = 1;
+static const int DEBOUNCE_MS = 10;
+static const int HOLD_MS = 3000;
+static const unsigned long SLEEP_AFTER_MS = 2 * 60 * 1000;  // minutes
 static const char *TAG = "Main";
 
 static const uint8_t O_SPECIAL = 64;
-static uint8_t physicalButtons[]{BUTTON_1, BUTTON_2, BUTTON_3,
-                                 BUTTON_4, BUTTON_7, BUTTON_8};
+static constexpr uint8_t physicalButtons[]{BUTTON_1, BUTTON_2, BUTTON_3,
+                                           BUTTON_4, BUTTON_7, BUTTON_8};
 
 enum Direction { DIR_LEFT, DIR_RIGHT, DIR_DOWN, DIR_UP, DIR_COUNT };
 
 constexpr size_t BUTTON_COUNT = sizeof(buttonPins);
 static Bounce debouncers[BUTTON_COUNT];
-static BleGamepad gamepad("ESP.RA.DIO Joystick", "Partlyhuman");
+constexpr static bool ADVERTISE_ON_START = true;
+// Caution_ long strings here can be too big for advertise blob - watch logs
+static BleGamepad gamepad("ESP.RA.DIO", "PH", 100, !ADVERTISE_ON_START);
+// static BleGamepad gamepad("ESP.RA.DIO", "PH", 100, false);
 
 void setup() {
 #if LOG_LEVEL >= 4
@@ -41,10 +60,7 @@ void setup() {
 
   for (size_t i = 0; i < BUTTON_COUNT; i++) {
     pinMode(buttonPins[i], INPUT_PULLUP);
-
-    debouncers[i] = Bounce();
-    debouncers[i].attach(buttonPins[i]);
-    debouncers[i].interval(DEBOUNCE_MS);
+    debouncers[i] = Bounce(buttonPins[i], DEBOUNCE_MS);
   }
   for (size_t i = 0; i < DIR_COUNT; i++) {
     pinMode(directionPins[i], INPUT_PULLUP);
@@ -83,8 +99,14 @@ static inline int8_t direction(Direction dir) {
   return digitalRead(directionPins[dir]) == LOW;
 }
 
+static inline bool isHeld(size_t buttonIndex) {
+  return debouncers[buttonIndex].read() == LOW &&
+         debouncers[buttonIndex].currentDuration() > HOLD_MS;
+}
+
 void deepSleep() {
   LOGI(TAG, "Going to sleep");
+  stopBlink();
   gamepad.end();
 
   // Disable any pullups before sleep, except the wake trigger. is this
@@ -120,21 +142,25 @@ void deepSleep() {
 }
 
 void loop() {
-  delay(1000 / FPS);
+  vTaskDelay(pdMS_TO_TICKS(SCAN_INTERVAL_MS));
 
   static unsigned long lastConnectedTime = millis();
   if (!gamepad.isConnected()) {
+    startBlink();
+
     auto idleFor = millis() - lastConnectedTime;
     if (idleFor > SLEEP_AFTER_MS) {
       LOGI(TAG, "Idle for %ld sec, sleeping.", idleFor / 1000);
       deepSleep();
       return;
     }
-    yield();
-    return;
+  } else {
+    lastConnectedTime = millis();
+    stopBlink();
   }
+  // CHANGE: now falling through, to update all debouncers etc and watch for
+  // special key combos whether we are connected or not
 
-  lastConnectedTime = millis();
   bool sendReport = false;
 
   for (byte i = 0; i < BUTTON_COUNT; i++) {
@@ -143,10 +169,10 @@ void loop() {
       auto button = physicalButtons[i];
       if (button >= O_SPECIAL) {
         button -= O_SPECIAL;
-        LOGV(TAG, "SPECIAL BTN %d", button);
+        LOGD(TAG, "SPECIAL BTN %d", button);
         gamepad.pressSpecialButton(button);
       } else {
-        LOGV(TAG, "BTN %d", button);
+        LOGD(TAG, "BTN %d", button);
         gamepad.press(button);
       }
       sendReport = true;
@@ -184,6 +210,16 @@ void loop() {
   }
 
   if (sendReport) {
+    // Already checks if connected
     gamepad.sendReport();
+  }
+
+  if (isHeld(INDEX_BUTTON_SEL) && isHeld(INDEX_BUTTON_START)) {
+    LOGI(TAG, "Held START+SEL, clearing pairs and entering 'pairing mode'");
+    gamepad.deleteAllBonds(false);
+    LOGI(TAG, "Entering pairing mode");
+    startBlink();
+    gamepad.enterPairingMode();
+    stopBlink();
   }
 }
