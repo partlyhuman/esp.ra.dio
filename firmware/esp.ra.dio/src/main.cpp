@@ -1,9 +1,9 @@
 #define BOUNCE_WITH_PROMPT_DETECTION
 #include <Arduino.h>
+#include <BleGamepad.h>
 #include <Bounce2.h>
 #include <esp_sleep.h>
 
-#include "BLEGamepad.h"
 #include "blink.h"
 #include "config.h"
 #include "log.h"
@@ -37,6 +37,7 @@ enum Direction { DIR_LEFT, DIR_RIGHT, DIR_DOWN, DIR_UP, DIR_COUNT };
 constexpr size_t BUTTON_COUNT = sizeof(buttonPins);
 static Bounce debouncers[BUTTON_COUNT];
 constexpr static bool ADVERTISE_ON_START = true;
+
 // Caution_ long strings here can be too big for advertise blob - watch logs
 static BleGamepad gamepad("ESP.RA.DIO", "PH", 100, !ADVERTISE_ON_START);
 // static BleGamepad gamepad("ESP.RA.DIO", "PH", 100, false);
@@ -47,7 +48,8 @@ void setup() {
 #endif
   Serial.begin(115200);
 
-  bool woke = (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_GPIO);
+  // Not doing anything with this currently
+  // bool woke = (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_GPIO);
 
   pinMode(PIN_LED, OUTPUT);
   gpio_hold_dis((gpio_num_t)PIN_LED);
@@ -90,6 +92,8 @@ void setup() {
   config.setAutoReport(false);
 
   gamepad.begin(&config);
+
+  // gamepad.getServer()->advertiseOnDisconnect(ADVERTISE_ON_DISCONNECT);
 
   // gamepad.setAxes(AXIS_MIDDLE, AXIS_MIDDLE);
   LOGI(TAG, "Setup complete");
@@ -216,10 +220,12 @@ void loop() {
 
   if (isHeld(INDEX_BUTTON_SEL) && isHeld(INDEX_BUTTON_START)) {
     LOGI(TAG, "Held START+SEL, clearing pairs and entering 'pairing mode'");
-    gamepad.deleteAllBonds(false);
-    LOGI(TAG, "Entering pairing mode");
-    startBlink();
-    gamepad.enterPairingMode();
-    stopBlink();
+    gamepad.deleteAllBonds(true);
+    // ^ true reboots
+    return;
+    // LOGI(TAG, "Entering pairing mode");
+    // startBlink();
+    // gamepad.enterPairingMode();
+    // stopBlink();
   }
 }
