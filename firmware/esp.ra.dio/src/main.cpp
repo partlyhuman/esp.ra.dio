@@ -10,9 +10,7 @@
 
 // Note only some GPIO can be used as wake sources
 constexpr gpio_num_t wakeGpio = GPIO_NUM_0;
-
-// Not for production: drive these low as ground
-constexpr uint8_t pinExtraGrounds[]{};
+constexpr esp_power_level_t POWER_LEVEL = ESP_PWR_LVL_N0;
 
 // buttons A, B, C, D, SEL, START
 constexpr uint8_t buttonPins[]{20, 3, 10, 21, 1, 0};
@@ -22,15 +20,20 @@ constexpr size_t INDEX_BUTTON_START = 5;
 // dirs LEFT, RIGHT, DOWN, UP
 constexpr uint8_t directionPins[]{4, 5, 6, 7};
 
-static const int SCAN_INTERVAL_MS = 1;
-static const int DEBOUNCE_MS = 10;
-static const int HOLD_MS = 3000;
-static const unsigned long SLEEP_AFTER_MS = 2 * 60 * 1000;  // minutes
-static const char *TAG = "Main";
+constexpr int SCAN_INTERVAL_MS = 1;
+constexpr int DEBOUNCE_MS = 10;
+constexpr int HOLD_MS = 3000;
+constexpr uint32_t MS_PER_MIN = 1000 * 60;
+constexpr uint32_t SLEEP_AFTER_DISCONNECTED_FOR_MS = 2 * MS_PER_MIN;
+constexpr uint32_t SLEEP_AFTER_CONNECTED_BUT_IDLE_FOR_MS = 10 * MS_PER_MIN;
 
-static const uint8_t O_SPECIAL = 64;
-static constexpr uint8_t physicalButtons[]{BUTTON_1, BUTTON_2, BUTTON_3,
-                                           BUTTON_4, BUTTON_7, BUTTON_8};
+const char *TAG = "Main";
+
+// Not used any more - add offset to the "special" button enum to mix & match
+// with normal buttons
+const uint8_t O_SPECIAL = 64;
+constexpr uint8_t physicalButtons[]{BUTTON_1, BUTTON_2, BUTTON_3,
+                                    BUTTON_4, BUTTON_7, BUTTON_8};
 
 enum Direction { DIR_LEFT, DIR_RIGHT, DIR_DOWN, DIR_UP, DIR_COUNT };
 
@@ -52,13 +55,9 @@ void setup() {
   // bool woke = (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_GPIO);
 
   pinMode(PIN_LED, OUTPUT);
+  // TODO only needed in R3
   gpio_hold_dis((gpio_num_t)PIN_LED);
   digitalWrite(PIN_LED, HIGH);
-
-  // for (size_t i = 0; i < sizeof(pinExtraGrounds); i++) {
-  //   pinMode(pinExtraGrounds[i], OUTPUT);
-  //   digitalWrite(pinExtraGrounds[i], LOW);
-  // }
 
   for (size_t i = 0; i < BUTTON_COUNT; i++) {
     pinMode(buttonPins[i], INPUT_PULLUP);
@@ -79,7 +78,7 @@ void setup() {
   config.setPid(0xe388);
   // The only valid values are: -12, -9, -6, -3, 0, 3, 6 and 9
   // Max of 9 is default
-  config.setTXPowerLevel(6);
+  config.setTXPowerLevel(POWER_LEVEL);
   config.setWhichSpecialButtons(false, false, false, false, false, false, false,
                                 false);
   // might consider adding 2 axes that are unused, or having an analog mode
@@ -115,9 +114,6 @@ void deepSleep() {
 
   // Disable any pullups before sleep, except the wake trigger. is this
   // necessary????
-  // for (size_t i = 0; i < sizeof(pinExtraGrounds); i++) {
-  //   pinMode(pinExtraGrounds[i], INPUT);
-  // }
   for (size_t i = 0; i < BUTTON_COUNT; i++) {
     pinMode(buttonPins[i], INPUT);
   }
@@ -127,12 +123,16 @@ void deepSleep() {
 
   // keep LED off
   digitalWrite(PIN_LED, LOW);
+
+  // TODO Only needed for REV3
   gpio_deep_sleep_hold_en();
   if (ESP_OK != gpio_hold_en((gpio_num_t)PIN_LED)) {
     LOGE(TAG, "Failed to hold LED pin for sleep");
   }
 
   // setup wake pin
+  // TODO should we externally bias this? Is there a cost to enabling the GPIO
+  // pullup during sleep?
   if (ESP_OK != gpio_pullup_en(wakeGpio)) {
     LOGE(TAG, "Failed to pullup");
   }
@@ -143,6 +143,7 @@ void deepSleep() {
   LOGI(TAG, "Shutdown");
   Serial.flush();
   esp_deep_sleep_start();
+  // Execution ends - no return
 }
 
 void loop() {
@@ -151,23 +152,18 @@ void loop() {
   static unsigned long lastConnectedTime = millis();
   if (!gamepad.isConnected()) {
     startBlink();
-
-    auto idleFor = millis() - lastConnectedTime;
-    if (idleFor > SLEEP_AFTER_MS) {
-      LOGI(TAG, "Idle for %ld sec, sleeping.", idleFor / 1000);
-      deepSleep();
-      return;
-    }
   } else {
     lastConnectedTime = millis();
     stopBlink();
   }
+
   // CHANGE: now falling through, to update all debouncers etc and watch for
   // special key combos whether we are connected or not
 
+  static unsigned long lastReportTime = millis();
   bool sendReport = false;
 
-  for (byte i = 0; i < BUTTON_COUNT; i++) {
+  for (size_t i = 0; i < BUTTON_COUNT; i++) {
     debouncers[i].update();
     if (debouncers[i].fell()) {
       auto button = physicalButtons[i];
@@ -216,6 +212,7 @@ void loop() {
   if (sendReport) {
     // Already checks if connected
     gamepad.sendReport();
+    lastReportTime = millis();
   }
 
   if (isHeld(INDEX_BUTTON_SEL) && isHeld(INDEX_BUTTON_START)) {
@@ -227,5 +224,16 @@ void loop() {
     // startBlink();
     // gamepad.enterPairingMode();
     // stopBlink();
+  }
+
+  auto now = millis();
+  if (gamepad.isConnected()) {
+    if (lastReportTime - now > SLEEP_AFTER_CONNECTED_BUT_IDLE_FOR_MS) {
+      deepSleep();
+    }
+  } else {
+    if (lastConnectedTime - now > SLEEP_AFTER_DISCONNECTED_FOR_MS) {
+      deepSleep();
+    }
   }
 }
