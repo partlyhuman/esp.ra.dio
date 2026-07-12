@@ -1,4 +1,5 @@
 (sym_lib_table
-  (version 7)
-  (lib (name "MCU_Espressif_ESP32_DevBoard")(type "KiCad")(uri "${KIPRJMOD}/../Libraries/MCU_Espressif_ESP32_DevBoard.kicad_sym")(options "")(descr ""))
+	(version 7)
+	(lib (name "MCU_Espressif_ESP32_DevBoard") (type "KiCad") (uri "${KIPRJMOD}/../Libraries/MCU_Espressif_ESP32_DevBoard.kicad_sym") (options "") (descr ""))
+	(lib (name "SN74LV") (type "KiCad") (uri "${KIPRJMOD}/../Libraries/SN74LV165APWRG3/SN74LV165APWRG3.kicad_sym") (options "") (descr ""))
 )
