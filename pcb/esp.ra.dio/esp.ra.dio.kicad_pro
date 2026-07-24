@@ -695,7 +695,7 @@
         "uuid": "e91880d7-e1f1-43ba-b9bf-5f0fc90655d2"
       }
     ],
-    "used_designators": "RN1,JP2",
+    "used_designators": "#PWR15,RN1,JP2",
     "variants": []
   },
   "sheets": [
